@@ -46,15 +46,10 @@ namespace autostage
                 s.throttleTxt = GUILayout.TextField(s.throttleTxt, GUILayout.Width(40));
                 GUILayout.EndHorizontal();
             }
-            
-            run = GUILayout.Toggle(run, "TOGGLE", mySty, GUILayout.ExpandWidth(true));
 
+            run = GUILayout.Toggle(run, "TOGGLE", mySty, GUILayout.ExpandWidth(true));
             GUILayout.EndVertical();
 
-            //DragWindow makes the window draggable. The Rect specifies which part of the window it can by dragged by, and is 
-            //clipped to the actual boundary of the window. You can also pass no argument at all and then the window can by
-            //dragged by any part of it. Make sure the DragWindow command is AFTER all your other GUI input stuff, or else
-            //it may "cover up" your controls and make them stop responding to the mouse.
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
 
         }
@@ -67,20 +62,20 @@ namespace autostage
         }
 
 
-        protected override void onFlightStart()  //Called when vessel is placed on the launchpad
+        protected override void onFlightStart()  //called when vessel is placed on the launchpad
         {
             init();
 
             RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI)); //start the GUI
 
-            //at the beginning of the flight, register fly-by-wire control function that will be called repeatedly
+            //at the beginning of the flight, register fly-by-wire control function
             FlightInputHandler.OnFlyByWire += new FlightInputHandler.FlightInputCallback(fly);
         }
 
 
         protected override void onPartStart()
         {
-            if ((windowPos.x == 0) && (windowPos.y == 0)) //windowPos is used to position the GUI window
+            if ((windowPos.x == 0) && (windowPos.y == 0)) //position the GUI window
             {
                 windowPos = new Rect(Screen.width - 130, 10, 10, 10);
             }
@@ -89,9 +84,9 @@ namespace autostage
 
         protected override void onPartUpdate()
         {
-            if (stop) stop = false; //toggle engines back on (assumes that fly() was called by ksp
+            if (stop) stop = false; //toggle engines back on (assumes that fly() was called by ksp)
 
-            if (run) //do stuff only if we are running
+            if (run)
             {
                 double curAlt = FlightGlobals.getAltitudeAtPos(FlightGlobals.ship_position);
 
@@ -114,29 +109,20 @@ namespace autostage
         
         protected override void onDisconnect()
         {
-            //remove the fly-by-wire function when we get disconnected from the ship:
-            FlightInputHandler.OnFlyByWire -= new FlightInputHandler.FlightInputCallback(fly);
+            FlightInputHandler.OnFlyByWire -= new FlightInputHandler.FlightInputCallback(fly); //remove the fly-by-wire function
         }
 
 
         protected override void onPartDestroy()
         {
             RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI)); //close the GUI
-            FlightInputHandler.OnFlyByWire -= new FlightInputHandler.FlightInputCallback(fly);
+            FlightInputHandler.OnFlyByWire -= new FlightInputHandler.FlightInputCallback(fly); //remove the fly-by-wire function
         }
 
 
-        //this function gets called every frame or something and gives access to the flight controls
+        //this function gets called every frame and gives access to the flight controls
         private void fly(FlightCtrlState s)
         {
-            //s.yaw = -0.2F;  //set yaw input to 20% left
-            //s.pitch += 0.3F; //set pitch input to whatever the player has input + 30%
-            //s.roll = 0.5F;   //set roll to 50% (either clockwise or counterclockwise, try it and find out)
-            //s.mainThrottle = 0.8F; //set throttle to 80%
-
-            //the range of yaw, pitch, and roll is -1.0F to 1.0F, and the throttle goes from 0.0F to 1.0F.
-            //if your code might violate that it's probably a good idea to clamp the inputs, e.g.:
-            //s.roll = Mathf.Clamp(s.roll, -1.0F, +1.0F);
             if (this.run && this.stop) s.mainThrottle = 0.0F;
             else if (this.run && !this.stop) s.mainThrottle = this.throttle / 100.0F;
         }
