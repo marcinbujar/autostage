@@ -19,11 +19,10 @@ namespace autostage
         {
             print("Auto Staging System by mmd [build 17.08.2012]");
 
-            stages[0] = new Stage(3000, 100);
-            stages[1] = new Stage(6000, 100);
-            stages[2] = new Stage(7000, 100);
-            stages[3] = new Stage(8000, 100);
-            stages[4] = new Stage(9000, 100);
+            for (int i=0; i<stages.Length; i++)
+            {
+                stages[i] = new Stage(3000 + i * 1000, 100);
+            }
         }
 
 
