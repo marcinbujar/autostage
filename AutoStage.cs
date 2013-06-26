@@ -15,10 +15,11 @@ namespace autostage
         protected Rect windowPos;
 
 
+
 		/* initialize plugin */
         private void init()
         {
-            print("Auto Staging System by mmd (25/06/13)");
+            print("[autostage] Auto Staging System by mmd (26/06/13)");
 
             for (int i=0; i<stages.Length; i++)
             {
@@ -40,13 +41,13 @@ namespace autostage
             GUILayout.BeginVertical();
             GUILayout.Label("ALT          THR");
 
-            foreach (Stage s in stages)
+            foreach (Stage stage in stages)
             {
-                float.TryParse(s.altitudeTxt, out s.altitude);
-                int.TryParse(s.throttleTxt, out s.throttle);
+                float.TryParse(stage.altitudeTxt, out stage.altitude);
+                int.TryParse(stage.throttleTxt, out stage.throttle);
                 GUILayout.BeginHorizontal();
-                s.altitudeTxt = GUILayout.TextField(s.altitudeTxt, GUILayout.Width(60));
-                s.throttleTxt = GUILayout.TextField(s.throttleTxt, GUILayout.Width(40));
+                stage.altitudeTxt = GUILayout.TextField(stage.altitudeTxt, GUILayout.Width(60));
+                stage.throttleTxt = GUILayout.TextField(stage.throttleTxt, GUILayout.Width(40));
                 GUILayout.EndHorizontal();
             }
 
@@ -73,7 +74,7 @@ namespace autostage
         {
             init();
             RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI));
-			vessel.OnFlyByWire += fly; /* register fly-by-wire control function */
+			vessel.OnFlyByWire += flyFunc; /* register fly-by-wire control function */
         	
 		}
 
@@ -101,16 +102,16 @@ namespace autostage
             {
                 double curAlt = FlightGlobals.getAltitudeAtPos(FlightGlobals.ship_position);
 
-                foreach (Stage s in stages)
+                foreach (Stage stage in stages)
                 {
-                    if (!s.staged && Math.Abs(s.altitude - curAlt) < 30)
+                    if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 30)
                         stop = true;
 
-                    if (!s.staged && Math.Abs(s.altitude - curAlt) < 10)
+                    if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 10)
                     {
                         Staging.ActivateNextStage();
-                        this.throttle = s.throttle; /* set the current throttle to value of current stage throttle */
-                        s.staged = true;
+                        this.throttle = stage.throttle; /* set the current throttle to value of current stage throttle */
+                        stage.staged = true;
                     }
                 }
             }
@@ -122,7 +123,7 @@ namespace autostage
 		/* callback when part is disconnected from the ship */
         protected override void onDisconnect()
         {
-			vessel.OnFlyByWire -= fly; /* remove the fly-by-wire function */
+			vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
 		}
 
 
@@ -131,16 +132,18 @@ namespace autostage
         protected override void onPartDestroy()
         {
             RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI)); /* close the GUI */
-			vessel.OnFlyByWire -= fly; /* remove the fly-by-wire function */
+			vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
 		}
 
 
 
         /* called every frame and modifies flight controls */
-        private void fly(FlightCtrlState s)
+        private void flyFunc(FlightCtrlState fcs)
         {
-            if (this.run && this.stop) s.mainThrottle = 0.0F;
-            else if (this.run && !this.stop) s.mainThrottle = this.throttle / 100.0F;
+            if (this.run && this.stop)
+				fcs.mainThrottle = 0.0F;
+            else if (this.run && !this.stop)
+				fcs.mainThrottle = this.throttle / 100.0F;
         }
 
     }
