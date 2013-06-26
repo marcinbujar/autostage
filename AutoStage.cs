@@ -15,9 +15,10 @@ namespace autostage
         protected Rect windowPos;
 
 
+		/* initialize plugin */
         private void init()
         {
-            print("Auto Staging System by mmd [build 17.08.2012]");
+            print("Auto Staging System by mmd (25/06/13)");
 
             for (int i=0; i<stages.Length; i++)
             {
@@ -26,6 +27,8 @@ namespace autostage
         }
 
 
+
+		/* create GUI */
         private void WindowGUI(int windowID)
         {
             GUIStyle mySty = new GUIStyle(GUI.skin.button);
@@ -55,6 +58,8 @@ namespace autostage
         }
 
 
+
+		/* draw GUI */
         private void drawGUI()
         {
             GUI.skin = HighLogic.Skin;
@@ -62,29 +67,35 @@ namespace autostage
         }
 
 
-        protected override void onFlightStart()  //called when vessel is placed on the launchpad
+
+		/* called when vessel is placed on the launchpad */
+        protected override void onFlightStart()
         {
             init();
-
-            RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI)); //start the GUI
-
-            //at the beginning of the flight, register fly-by-wire control function
-            FlightInputHandler.OnFlyByWire += new FlightInputHandler.FlightInputCallback(fly);
-        }
+            RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI));
+			vessel.OnFlyByWire += fly; /* register fly-by-wire control function */
+        	
+		}
 
 
+
+		/* callback when part is started */
         protected override void onPartStart()
         {
-            if ((windowPos.x == 0) && (windowPos.y == 0)) //position the GUI window
+            if ((windowPos.x == 0) && (windowPos.y == 0))
             {
-                windowPos = new Rect(Screen.width - 130, 10, 10, 10);
+				windowPos = new Rect(Screen.width - 130, 10, 10, 10); /* position the GUI */
             }
         }
 
 
+
+		/* callback when part is updated
+         * activates stages and changes throttle which is then set by fly-by-wire function
+         */
         protected override void onPartUpdate()
         {
-            if (stop) stop = false; //toggle engines back on (assumes that fly() was called by ksp)
+            if (stop) stop = false; /* toggle engines back on (assumes that fly() was called by ksp) */
 
             if (run)
             {
@@ -92,13 +103,13 @@ namespace autostage
 
                 foreach (Stage s in stages)
                 {
-                    if (!s.staged && Math.Abs(s.altitude - curAlt) < 20)
+                    if (!s.staged && Math.Abs(s.altitude - curAlt) < 30)
                         stop = true;
 
                     if (!s.staged && Math.Abs(s.altitude - curAlt) < 10)
                     {
                         Staging.ActivateNextStage();
-                        this.throttle = s.throttle; //set the current throttle to value of current stage throttle
+                        this.throttle = s.throttle; /* set the current throttle to value of current stage throttle */
                         s.staged = true;
                     }
                 }
@@ -106,21 +117,26 @@ namespace autostage
 
         }
 
-        
+
+
+		/* callback when part is disconnected from the ship */
         protected override void onDisconnect()
         {
-            FlightInputHandler.OnFlyByWire -= new FlightInputHandler.FlightInputCallback(fly); //remove the fly-by-wire function
-        }
+			vessel.OnFlyByWire -= fly; /* remove the fly-by-wire function */
+		}
 
 
+
+		/* callback when part is destroyed */
         protected override void onPartDestroy()
         {
-            RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI)); //close the GUI
-            FlightInputHandler.OnFlyByWire -= new FlightInputHandler.FlightInputCallback(fly); //remove the fly-by-wire function
-        }
+            RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI)); /* close the GUI */
+			vessel.OnFlyByWire -= fly; /* remove the fly-by-wire function */
+		}
 
 
-        //this function gets called every frame and gives access to the flight controls
+
+        /* called every frame and modifies flight controls */
         private void fly(FlightCtrlState s)
         {
             if (this.run && this.stop) s.mainThrottle = 0.0F;
