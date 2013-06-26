@@ -16,7 +16,7 @@ namespace autostage
 
 
 
-		/* initialize plugin */
+        /* initialize plugin */
         private void init()
         {
             print("[autostage] Auto Staging System by mmd (26/06/13)");
@@ -29,7 +29,7 @@ namespace autostage
 
 
 
-		/* create GUI */
+        /* create GUI */
         private void WindowGUI(int windowID)
         {
             GUIStyle mySty = new GUIStyle(GUI.skin.button);
@@ -60,7 +60,7 @@ namespace autostage
 
 
 
-		/* draw GUI */
+        /* draw GUI */
         private void drawGUI()
         {
             GUI.skin = HighLogic.Skin;
@@ -69,29 +69,28 @@ namespace autostage
 
 
 
-		/* called when vessel is placed on the launchpad */
+        /* called when vessel is placed on the launchpad */
         protected override void onFlightStart()
         {
             init();
             RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI));
-			vessel.OnFlyByWire += flyFunc; /* register fly-by-wire control function */
-        	
-		}
+            vessel.OnFlyByWire += flyFunc; /* register fly-by-wire control function */
+        }
 
 
 
-		/* callback when part is started */
+        /* callback when part is started */
         protected override void onPartStart()
         {
             if ((windowPos.x == 0) && (windowPos.y == 0))
             {
-				windowPos = new Rect(Screen.width - 130, 10, 10, 10); /* position the GUI */
+                windowPos = new Rect(Screen.width - 130, 10, 10, 10); /* position the GUI */
             }
         }
 
 
 
-		/* callback when part is updated
+        /* callback when part is updated
          * activates stages and changes throttle which is then set by fly-by-wire function
          */
         protected override void onPartUpdate()
@@ -120,20 +119,20 @@ namespace autostage
 
 
 
-		/* callback when part is disconnected from the ship */
+        /* callback when part is disconnected from the ship */
         protected override void onDisconnect()
         {
-			vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
-		}
+            vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
+        }
 
 
 
-		/* callback when part is destroyed */
+        /* callback when part is destroyed */
         protected override void onPartDestroy()
         {
             RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI)); /* close the GUI */
-			vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
-		}
+            vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
+        }
 
 
 
@@ -141,9 +140,9 @@ namespace autostage
         private void flyFunc(FlightCtrlState fcs)
         {
             if (this.run && this.stop)
-				fcs.mainThrottle = 0.0F;
+                fcs.mainThrottle = 0.0F;
             else if (this.run && !this.stop)
-				fcs.mainThrottle = this.throttle / 100.0F;
+                fcs.mainThrottle = this.throttle / 100.0F;
         }
 
     }
