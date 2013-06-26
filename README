@@ -1,13 +1,16 @@
 Auto Staging System
 by mmd
 
-Kerbal Space Program 0.16
-Microsoft Visual Studio 10
+Kerbal Space Program 0.20
+MonoDevelop 4
 GPLv3
 
 
 INSTRUCTIONS:
 [1] compile the class library into autostage.dll
-[2] place dll into KSP/Plugins
-[3] edit part.cfg of a part in KSP/Parts and set its Module = AutoStage
+[2] place dll into Plugins/ directory
+[3] create a custom part in GameData/Squad/Parts (can just make a copy of existing part)
+[3] edit part.cfg and set module = AutoStage under general parameters
 [4] include the part in your rocket in VAB
+[5] once on the lanchpad, a GUI window should appear which allows setting altitude and thrust of each automatic staging point
+[6] press TOGGLE to activate the auto staging
