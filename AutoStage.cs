@@ -9,8 +9,8 @@ namespace autostage
     public class AutoStage : Part
     {
         protected Stage[] stages = new Stage[5];
-        protected bool run = false;
-        protected bool stop = false;
+        protected bool systemRun = false;
+        protected bool enginesOn = true;
         protected int throttle = 100;
         protected Rect windowPos;
 
@@ -29,18 +29,18 @@ namespace autostage
 
 
 
-        /* create GUI */
+        /* GUI callback */
         private void WindowGUI(int windowID)
         {
-            GUIStyle mySty = new GUIStyle(GUI.skin.button);
-            mySty.normal.textColor = mySty.focused.textColor = Color.white;
-            mySty.hover.textColor = mySty.active.textColor = Color.yellow;
-            mySty.onNormal.textColor = mySty.onFocused.textColor = mySty.onHover.textColor = mySty.onActive.textColor = Color.green;
-            mySty.padding = new RectOffset(10, 10, 10, 10);
+            GUIStyle style = new GUIStyle(GUI.skin.button);
+            style.normal.textColor = style.focused.textColor = Color.white;
+            style.hover.textColor = style.active.textColor = Color.yellow;
+            style.onNormal.textColor = style.onFocused.textColor = style.onHover.textColor = style.onActive.textColor = Color.green;
+            style.padding = new RectOffset(10, 10, 10, 10);
 
             GUILayout.BeginVertical();
-            GUILayout.Label(vessel.GetHeightFromTerrain().ToString("ALT: 0.0"));
-            GUILayout.Label("ALT           THR");
+            GUILayout.Label(vessel.GetHeightFromTerrain().ToString("ALT 0m"));
+            GUILayout.Label("ALT             THR");
 
             foreach (Stage stage in stages)
             {
@@ -52,7 +52,7 @@ namespace autostage
                 GUILayout.EndHorizontal();
             }
 
-            run = GUILayout.Toggle(run, "TOGGLE", mySty, GUILayout.ExpandWidth(true));
+            systemRun = GUILayout.Toggle(systemRun, "TOGGLE", style, GUILayout.ExpandWidth(true));
             GUILayout.EndVertical();
 
             GUI.DragWindow(new Rect(0, 0, 10000, 20));
@@ -73,9 +73,9 @@ namespace autostage
         /* called when vessel is placed on the launchpad */
         protected override void onFlightStart()
         {
-            init();
+            this.init();
             RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI));
-            vessel.OnFlyByWire += flyFunc; /* register fly-by-wire control function */
+            vessel.OnFlyByWire += this.flyFunc; /* register fly-by-wire control function */
         }
 
 
@@ -96,16 +96,16 @@ namespace autostage
          */
         protected override void onPartUpdate()
         {
-            if (stop) stop = false; /* toggle engines back on (assumes that fly() was called by ksp) */
+            if (!this.enginesOn) this.enginesOn = true; /* toggle engines back on (assumes that fly() was called by ksp) */
 
-            if (run)
+            if (this.systemRun)
             {
                 double curAlt = vessel.GetHeightFromTerrain();
 
-                foreach (Stage stage in stages)
+                foreach (Stage stage in this.stages)
                 {
-                    if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 30)
-                        stop = true;
+                    if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 20)
+                        this.enginesOn = false;
 
                     if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 10)
                     {
@@ -123,7 +123,7 @@ namespace autostage
         /* callback when part is disconnected from the ship */
         protected override void onDisconnect()
         {
-            vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
+            vessel.OnFlyByWire -= this.flyFunc; /* remove the fly-by-wire function */
         }
 
 
@@ -131,8 +131,8 @@ namespace autostage
         /* callback when part is destroyed */
         protected override void onPartDestroy()
         {
-            RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI)); /* close the GUI */
-            vessel.OnFlyByWire -= flyFunc; /* remove the fly-by-wire function */
+            RenderingManager.RemoveFromPostDrawQueue(3, new Callback(this.drawGUI)); /* close the GUI */
+            vessel.OnFlyByWire -= this.flyFunc; /* remove the fly-by-wire function */
         }
 
 
@@ -140,10 +140,12 @@ namespace autostage
         /* called every frame and modifies flight controls */
         private void flyFunc(FlightCtrlState fcs)
         {
-            if (this.run && this.stop)
-                fcs.mainThrottle = 0.0F;
-            else if (this.run && !this.stop)
-                fcs.mainThrottle = this.throttle / 100.0F;
+            if (this.systemRun) {
+                if (!this.enginesOn)
+                    fcs.mainThrottle = 0.0F;
+                else
+                    fcs.mainThrottle = this.throttle / 100.0F;
+            }
         }
 
     }
