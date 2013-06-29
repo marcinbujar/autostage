@@ -39,7 +39,8 @@ namespace autostage
             mySty.padding = new RectOffset(10, 10, 10, 10);
 
             GUILayout.BeginVertical();
-            GUILayout.Label("ALT          THR");
+            GUILayout.Label(vessel.GetHeightFromTerrain().ToString("ALT: 0.0"));
+            GUILayout.Label("ALT           THR");
 
             foreach (Stage stage in stages)
             {
@@ -99,7 +100,7 @@ namespace autostage
 
             if (run)
             {
-                double curAlt = FlightGlobals.getAltitudeAtPos(FlightGlobals.ship_position);
+                double curAlt = vessel.GetHeightFromTerrain();
 
                 foreach (Stage stage in stages)
                 {
