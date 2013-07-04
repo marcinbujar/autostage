@@ -19,7 +19,7 @@ namespace autostage
         /* initialize plugin */
         private void init()
         {
-            print("[autostage] Auto Staging System by mmd (26/06/13)");
+            print("[autostage] Auto Staging System by mmd (03/07/13)");
 
             for (int i=0; i<stages.Length; i++)
             {
@@ -104,7 +104,7 @@ namespace autostage
 
                 foreach (Stage stage in this.stages)
                 {
-                    if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 20)
+                    if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 30)
                         this.enginesOn = false;
 
                     if (!stage.staged && Math.Abs(stage.altitude - curAlt) < 10)
@@ -112,6 +112,7 @@ namespace autostage
                         Staging.ActivateNextStage();
                         this.throttle = stage.throttle; /* set the current throttle to value of current stage throttle */
                         stage.staged = true;
+						print("[autostage] Stage Activated");
                     }
                 }
             }
